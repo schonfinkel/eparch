@@ -1,0 +1,18 @@
+*.beam
+*.ez
+*build
+erl_crash.dump
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# Nix
+result
+
+# pre-commit
+.pre-commit-config.yaml

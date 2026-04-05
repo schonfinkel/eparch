@@ -1,0 +1,60 @@
+name: "[Nix] Build & Test"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    name: "[Lib] Check, Build and Test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      # To leverage devenv inside Github Actions
+      - uses: cachix/cachix-action@v16
+        with:
+          name: devenv
+
+      - name: "[Nix] Run treefmt to check Erlang / Gleam / Nix"
+        run: |
+          nix flake check
+
+      - name: "[Nix] Build"
+        run: |
+          nix build
+
+      - name: "[Gleam] Run Testing Suite"
+        run: |
+          nix develop --command sh -c "gleam test"
+
+  test-examples:
+    name: "[Examples] ${{ matrix.example }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example:
+          - examples/01-pushbutton
+          - examples/02-doorlock
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - uses: cachix/cachix-action@v16
+        with:
+          name: devenv
+
+      - name: "[Gleam] Build and Test"
+        run: |
+          nix develop --command sh -c "cd ${{ matrix.example }} && gleam test"
