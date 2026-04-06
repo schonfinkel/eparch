@@ -86,7 +86,7 @@ pub fn postpone_redelivers_event_after_state_change_test() {
     |> state_machine.start
 
   let reply_sub = process.new_subject()
-  // Action arrives first but is postponed; Go triggers state change → redeliver.
+  // Action arrives first but is postponed; Go triggers state change -> redeliver.
   process.send(machine.data, Action(reply_with: reply_sub))
   process.send(machine.data, Go)
 
@@ -326,7 +326,8 @@ pub fn cast_delivers_message_as_cast_event_test() {
 }
 
 pub fn send_delivers_message_as_info_not_cast_test() {
-  // state_machine.send → Info(msg); handler only handles Cast → no reply → timeout.
+  // state_machine.send -> Info(msg)
+  // handler only handles Cast -> no reply -> timeout.
   let assert Ok(machine) =
     state_machine.new(initial_state: CastListening, initial_data: Nil)
     |> state_machine.on_event(cast_handler)

@@ -95,34 +95,34 @@ pub fn handle_event(
     // On entering the Open state, arm the auto-lock timer.
     sm.Enter(_), Open -> sm.keep_state(data, [sm.StateTimeout(auto_lock_ms)])
 
-    // Correct code while Locked → unlock.
+    // Correct code while Locked -> unlock.
     sm.Info(EnterCode(entered, reply_sub)), Locked if entered == data.code -> {
       process.send(reply_sub, Ok(Nil))
       sm.next_state(Open, data, [])
     }
 
-    // Wrong code while Locked → stay locked, count the attempt.
+    // Wrong code while Locked -> stay locked, count the attempt.
     sm.Info(EnterCode(_, reply_sub)), Locked -> {
       process.send(reply_sub, Error("Wrong code"))
       sm.keep_state(Data(..data, attempts: data.attempts + 1), [])
     }
 
-    // Entering a code while already Open → acknowledge without state change.
+    // Entering a code while already Open -> acknowledge without state change.
     sm.Info(EnterCode(_, reply_sub)), Open -> {
       process.send(reply_sub, Ok(Nil))
       sm.keep_state(data, [])
     }
 
-    // State timeout fired → re-lock.
+    // State timeout fired -> re-lock.
     sm.Timeout(sm.StateTimeoutType), Open -> sm.next_state(Locked, data, [])
 
-    // Status query in any state → reply with current state.
+    // Status query in any state -> reply with current state.
     sm.Info(GetStatus(reply_sub)), _ -> {
       process.send(reply_sub, state)
       sm.keep_state(data, [])
     }
 
-    // Everything else (unmatched Enter events, casts, etc.) → no-op.
+    // Everything else (unmatched Enter events, casts, etc.) -> no-op.
     _, _ -> sm.keep_state(data, [])
   }
 }

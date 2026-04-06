@@ -18,7 +18,7 @@
 ////   pushbutton.get_count(machine.data)  // => 0
 ////   pushbutton.push(machine.data)       // => 0 (count before increment)
 ////   pushbutton.get_count(machine.data)  // => 1
-////   pushbutton.push(machine.data)       // => 1 (On → Off, no increment)
+////   pushbutton.push(machine.data)       // => 1 (On -> Off, no increment)
 ////   pushbutton.get_count(machine.data)  // => 1
 //// }
 //// ```

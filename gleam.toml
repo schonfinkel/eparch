@@ -1,7 +1,7 @@
 name = "eparch"
 version = "0.2.0"
 
-description = "Gleam-friendly types for some powefull Erlang/OTP behaviours"
+description = "Gleam-friendly types for some poweful Erlang/OTP behaviours (like gen_statem and gen_event)"
 licences = ["LGPL-3.0-or-later"]
 repository = { type = "github", user = "schonfinkel", repo = "eparch" }
 # links = [{ title = "Website", href = "" }]
@@ -19,5 +19,6 @@ gleeunit = ">= 1.0.0 and < 2.0.0"
 [documentation]
 pages = [
     { title = "Examples", path = "examples/readme.html", source = "./examples/README.md" },
+    { title = "Quick Start", path = "docs/quick_start.html", source = "./docs/Quick_Start.md" },
     { title = " ", path = "#", source = "" },
 ]

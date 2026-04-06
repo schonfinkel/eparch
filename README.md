@@ -11,12 +11,34 @@
 >
 > [^1]: The Oxford Dictionary of Byzantium, Vol II.
 
-Eparch is a library that brings type-safe wrappers for some Erlang/OTP behaviours, making your [byzantine systems](https://en.wikipedia.org/wiki/Byzantine_fault) shine with Gleam's type system.
+Eparch is a Gleam library that wraps certain Erlang/OTP behaviours with a type-safe API, making your [byzantine systems](https://en.wikipedia.org/wiki/Byzantine_fault) shine with a great type system.
 
 ## Supported OTP Behaviours
 
-- [x] [`gen_statem`](https://www.erlang.org/doc/apps/stdlib/gen_statem.html): OTP's newest behaviour for finite state machines.
-- [ ] [`gen_event`](https://www.erlang.org/doc/apps/stdlib/gen_event.html): For creating event managers.
+| Module | Wraps | Purpose |
+|---|---|---|
+| `eparch/state_machine` | [`gen_statem`](https://www.erlang.org/doc/apps/stdlib/gen_statem.html) | Type-safe finite state machines |
+| `eparch/event_manager` | [`gen_event`](https://www.erlang.org/doc/apps/stdlib/gen_event.html) | Broadcast event managers with dynamic handlers |
+
+Full API reference: <https://hexdocs.pm/eparch>.
+
+### Key Differences from `gen_statem`
+
+| Erlang's `gen_statem` | `eparch/state_machine` |
+|---|---|
+| Separate `handle_call`, `handle_cast`, `handle_info` | Single handler dispatching on a unified `Event` type |
+| Raw action tuples | Type-safe `Action` values |
+| `state_enter` always on | Opt-in via `with_state_enter()` |
+| Multiple return tuple formats | Single `Step` type (`NextState`, `KeepState`, `Stop`) |
+
+### Key Differences from `gen_event`
+
+| Erlang's `gen_event` | `eparch/event_manager` |
+|---|---|
+| Separate handler callback module per handler | Single `Handler` builder (`new_handler/2`, `on_terminate/2`) |
+| Handler identified by `{Module, Id}` tuple | Opaque `HandlerRef` returned by `add_handler` |
+| `handle_call` for per-handler queries | Embed `process.Subject(reply)` in your event type instead |
+| `add_sup_handler` | `add_supervised_handler` |
 
 ## Installation
 
@@ -24,96 +46,9 @@ Eparch is a library that brings type-safe wrappers for some Erlang/OTP behaviour
 gleam add eparch
 ```
 
-## Quick Start
+### Usage
 
-The `eparch/state_machine` module wraps `gen_statem` with a type-safe API. You must define your states and messages as custom Gleam types, write a single event handler, and wire everything up with a `Builder`:
-
-```gleam
-import eparch/state_machine as sm
-import gleam/erlang/process
-
-type State { Off | On }
-
-type Msg {
-  Push
-  GetCount(reply_with: process.Subject(Int))
-}
-
-fn handle_event(event, state, data: Int) {
-  case event, state {
-    sm.Info(Push), Off -> sm.next_state(On, data + 1, [])
-    sm.Info(Push), On  -> sm.next_state(Off, data, [])
-
-    sm.Info(GetCount(reply_with: subj)), _ -> {
-      process.send(subj, data)
-      sm.keep_state(data, [])
-    }
-
-    _, _ -> sm.keep_state(data, [])
-  }
-}
-
-pub fn start() {
-  let assert Ok(machine) =
-    sm.new(initial_state: Off, initial_data: 0)
-    |> sm.on_event(handle_event)
-    |> sm.start
-
-  machine.data  // Subject(Msg)
-}
-```
-
-### Synchronous calls via `gen_statem:call`
-
-For request/reply without embedding a `Subject` in the message, use the native `gen_statem` call mechanism, events arrive as `sm.Call(from, msg)` and replies are sent back with `sm.Reply`:
-
-```gleam
-import eparch/state_machine as sm
-
-type Msg { Unlock(String) }
-
-fn handle_event(event, state, data) {
-  case event, state {
-    sm.Call(from, Unlock(entered)), Locked ->
-      case entered == data.code {
-        True  -> sm.next_state(Open, data, [sm.Reply(from, Ok(Nil))])
-        False -> sm.keep_state(data, [sm.Reply(from, Error("Wrong code"))])
-      }
-    _, _ -> sm.keep_state(data, [])
-  }
-}
-```
-
-### State Enter callbacks
-
-You can also opt into `state_enter` to react whenever the machine enters a new state:
-
-```gleam
-sm.new(initial_state: Locked, initial_data: data)
-|> sm.with_state_enter()
-|> sm.on_event(handle_event)
-|> sm.start
-
-// In handle_event, auto-lock after 5 s when entering "Open"
-fn handle_event(event, state, data) {
-  case event, state {
-    // ...
-    sm.Enter(_), Open -> sm.keep_state(data, [sm.StateTimeout(5000)])
-    // ...
-  }
-}
-```
-
-### Key differences from `gen_statem`
-
-| Erlang `gen_statem` | `eparch/state_machine` |
-|---|---|
-| Separate `handle_call`, `handle_cast`, `handle_info` | Single `handle_event` dispatching on `Event` |
-| Raw action tuples | Type-safe `Action` values |
-| `state_enter` always on | Opt-in via `with_state_enter()` |
-| Multiple return tuple formats | Single `Step` type |
-
-Full API reference: <https://hexdocs.pm/eparch>
+See the [Quick Start guide](https://hexdocs.pm/eparch/quick_start.html) for full walkthroughs, or run some of the example projects that live in the [`examples/`](https://hexdocs.pm/eparch/readme.html) directory.
 
 ## Development
 

@@ -42,8 +42,8 @@ pub opaque type Builder(state, data, msg, return, reply) {
 /// Events that a state machine can receive.
 ///
 /// This unifies the three types of messages in OTP:
-/// - Calls (synchronous, require reply)
-/// - Casts (asynchronous fire-and-forget)
+/// - Calls (synchronous, requires reply)
+/// - Casts (asynchronous / fire-and-forget)
 /// - Info (other messages, from selectors/monitors)
 ///
 pub type Event(state, msg, reply) {

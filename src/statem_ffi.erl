@@ -29,12 +29,12 @@ gen_statem behavior callbacks and Gleam's type-safe API.
     gleam_data,
     % fn(Event, State, Data) -> Step
     gleam_handler,
-    % StateEnter — whether Enter events reach the Gleam handler
+    % Whether `StateEnter` events reach the Gleam handler
     state_enter,
     % The tag used in this process's Subject:
     subject_tag,
-    %   unnamed → reference (make_ref())
-    %   named   → atom (the registered name)
+    % - unnamed: reference (make_ref())
+    % - named: atom (the registered name)
 
     % none | {some, fn(data) -> data}
     on_code_change
@@ -269,7 +269,8 @@ convert_event_to_gleam(EventType, EventContent, _State, GleamStatem) ->
     end.
 
 %%%===================================================================
-%%% Step conversion — Gleam → Erlang
+%%% Step conversion
+%%% Gleam to Erlang
 %%%===================================================================
 
 -doc """

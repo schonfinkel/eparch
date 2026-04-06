@@ -47,13 +47,13 @@ pub fn get_count_when_on_returns_count_test() {
   |> should.equal(sm.KeepState(5, [sm.Reply(from, 5)]))
 }
 
-/// The press count only grows on Off→On transitions, never on On -> Off.
+/// The press count only grows on Off -> On transitions, never on On -> Off.
 /// Simulates three consecutive pushes and inspects each resulting Step.
 pub fn count_increments_only_on_off_to_on_transitions_test() {
   let from = sm.from_for_testing()
 
   // Push 1
-  // - Off -> On, Data 0 → 1
+  // - Off -> On, Data 0 -> 1
   // - reply 0
   pushbutton.handle_event(sm.Call(from, pushbutton.Push), pushbutton.Off, 0)
   |> should.equal(sm.NextState(pushbutton.On, 1, [sm.Reply(from, 0)]))

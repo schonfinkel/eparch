@@ -29,7 +29,7 @@ jobs:
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build/dev/docs/exarch/
+          path: build/dev/docs/eparch/
 
   deploy-docs:
     runs-on: ubuntu-latest

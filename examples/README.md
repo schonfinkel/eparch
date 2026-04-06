@@ -9,10 +9,10 @@ gleam test
 
 ## State Machine (`gen_statem`)
 
-| Example | Concepts demonstrated |
+| Example | Description |
 |---|---|
-| [`01-push-button`](./01-push-button/) | Basic state transitions, synchronous calls, press counter |
-| [`02-door-lock`](./02-door-lock/) | `with_state_enter`, `StateTimeout` for auto-lock, wrong-code tracking |
+| [`01-push-button`](https://github.com/schonfinkel/eparch/tree/main/examples/01-push-button) | Basic state transitions, synchronous calls, press counter |
+| [`02-door-lock`](https://github.com/schonfinkel/eparch/tree/main/examples/02-door-lock) | Shows how to use `with_state_enter`, `StateTimeout` for auto-lock, wrong-code tracking |
 
 ### Push-Button
 
@@ -20,12 +20,6 @@ The canonical OTP `gen_statem` [example from the official docs](https://www.erla
 
 - A button toggles between `Off` and `On`.
 - Only `Off -> On` transitions increment the press counter.
-
-```mermaid
-stateDiagram
-    Off --> On  : push (count + 1)
-    On  --> Off : push
-```
 
 ### Door Lock
 
@@ -35,13 +29,6 @@ A code-protected door lock.
 - The door auto-relocks after a configurable timeout via `StateTimeout`.
 - Demonstrates `with_state_enter` to arm the timer on every entry to the `Open` state.
 
-```mermaid
-stateDiagram
-    Locked --> Open   : correct code
-    Open   --> Locked : timeout
-    Locked --> Locked : wrong code (attempts + 1)
-```
-
-## `eparch/gen_event`
+## Event Handler (`gen_event`)
 
 Coming soon.
