@@ -1,5 +1,5 @@
 name = "eparch"
-version = "0.2.0"
+version = "0.3.0"
 
 description = "Gleam-friendly types for some poweful Erlang/OTP behaviours (like gen_statem and gen_event)"
 licences = ["LGPL-3.0-or-later"]
