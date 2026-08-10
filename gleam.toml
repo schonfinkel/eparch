@@ -16,10 +16,16 @@ gleam_erlang = ">= 1.3.0 and < 2.0.0"
 
 [dev_dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
+# Only the generator driver in test/ uses this. Gleam cannot scope a
+# dependency to part of a package, and writing files is not something the
+# library itself ever does, so it lives here rather than in [dependencies].
+simplifile = ">= 2.0.0 and < 3.0.0"
+argv = ">= 1.0.0 and < 2.0.0"
 
 [documentation]
 pages = [
     { title = "Examples", path = "examples/readme.html", source = "./examples/README.md" },
     { title = "Quick Start", path = "docs/quick_start.html", source = "./docs/Quick_Start.md" },
+    { title = "Session Types", path = "docs/session_types.html", source = "./docs/Session_Types.md" },
     { title = " ", path = "#", source = "" },
 ]

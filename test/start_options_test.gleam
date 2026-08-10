@@ -221,7 +221,7 @@ fn decoded_priority_atom(info: Dynamic) -> atom.Atom {
 }
 
 // ---------------------------------------------------------------------------
-// with_debug: starting with debug flags is a smoke test — the only useful
+// with_debug: starting with debug flags is a smoke test. The only useful
 // observation is that the process starts and serves messages normally.
 // ---------------------------------------------------------------------------
 
