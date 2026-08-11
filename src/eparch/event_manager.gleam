@@ -141,7 +141,7 @@ pub type SwapError {
 /// Produced inside `on_swap_out` via `swap_term_from` and consumed inside
 /// `on_swap_in` via `swap_term_decode`. Because the producer and consumer
 /// of a swap have independent state types, the carrier is intentionally
-/// untyped on the Gleam side — decode it with the `gleam/dynamic/decode`
+/// untyped on the Gleam side. Decode it with the `gleam/dynamic/decode`
 /// module.
 ///
 pub type SwapTerm
@@ -589,7 +589,7 @@ fn do_add_handler(
 /// {gen_event_EXIT, HandlerRef, Reason}
 /// ```
 ///
-/// Receive it via `gleam/erlang/process` selectors — `process.select_other` is
+/// Receive it via `gleam/erlang/process` selectors. `process.select_other` is
 /// the catch-all hook you can use to observe raw Erlang messages.
 ///
 pub fn add_supervised_handler(
@@ -627,7 +627,7 @@ fn do_remove_handler(
 /// Maps to `gen_event:swap_handler/3`. The old handler's `on_swap_out`
 /// callback runs (if set), its result is threaded into the new handler's
 /// `on_swap_in` (if set) to produce the new handler's initial state, and the
-/// new handler is installed — all observed by the manager as a single
+/// new handler is installed, all observed by the manager as a single
 /// transaction so no `notify` can slip between the remove and the add.
 ///
 /// On success, returns the new handler's `HandlerRef`. The old `HandlerRef`

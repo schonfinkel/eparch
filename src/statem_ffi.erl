@@ -723,7 +723,7 @@ check_response(Msg, ReqId) ->
     end.
 
 %%%===================================================================
-%%% reqids API — OTP 25.0+
+%%% reqids API (OTP 25.0+)
 %%%===================================================================
 
 -doc "Creates a new empty request-id collection.".

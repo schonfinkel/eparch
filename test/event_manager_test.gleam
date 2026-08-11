@@ -746,7 +746,7 @@ pub fn swap_handler_without_hooks_starts_from_init_state_test() {
 }
 
 pub fn swap_handler_skips_on_terminate_test() {
-  // When a handler is swapped out, its on_terminate is NOT invoked — the
+  // When a handler is swapped out, its on_terminate is NOT invoked. The
   // swap path runs on_swap_out only (or nothing if neither is set). This
   // test fails (timeout) if that contract is broken.
   let assert Ok(mgr) =
@@ -779,7 +779,7 @@ pub fn swap_handler_skips_on_terminate_test() {
 
 pub fn swap_handler_with_stale_ref_still_installs_new_test() {
   // gen_event:swap_handler installs the new handler even when the old ref is
-  // unknown — it just hands {error, module_not_found} to the new handler's
+  // unknown. It just hands {error, module_not_found} to the new handler's
   // on_swap_in. This test pins that behaviour.
   let assert Ok(mgr) =
     event_manager.start_link(event_manager.new_start_options())
