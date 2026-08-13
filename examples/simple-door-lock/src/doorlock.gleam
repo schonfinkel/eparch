@@ -75,8 +75,7 @@ fn match_digit(digit: Int, data: Data) -> sm.Step(State, Data, Message, Reply) {
       sm.next_state(Open, Data(..data, remaining: data.code), [])
 
     // Prefix matches -> consume the digit, wait for more.
-    [d, ..rest] if d == digit ->
-      sm.keep_state(Data(..data, remaining: rest), [])
+    [d, ..rest] if d == digit -> sm.keep_state(Data(..data, remaining: rest), [])
 
     // Wrong digit -> reset the buffer and stay locked.
     _ -> sm.keep_state(Data(..data, remaining: data.code), [])

@@ -478,7 +478,9 @@ fn do_start_link(
 /// link-based crash propagation, e.g. when the parent will install its own
 /// monitor or hand the manager to a custom supervisor.
 ///
-pub fn start(options: StartOptions(event)) -> Result(Manager(event), StartError) {
+pub fn start(
+  options: StartOptions(event),
+) -> Result(Manager(event), StartError) {
   do_start_no_link(options)
 }
 

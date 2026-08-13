@@ -508,8 +508,8 @@ fn event_timeout_handler(
         state_machine.EventTimeout(state_machine.After(10), EvtTick),
       ])
 
-    state_machine.Timeout(state_machine.EventTimeoutType, EvtTick), EvtWaiting ->
-      state_machine.next_state(EvtFired, data, [])
+    state_machine.Timeout(state_machine.EventTimeoutType, EvtTick), EvtWaiting
+    -> state_machine.next_state(EvtFired, data, [])
 
     state_machine.Info(EvtPoke), EvtWaiting ->
       state_machine.next_state(EvtPoked, data, [])
@@ -642,8 +642,8 @@ fn abs_timeout_handler(
         state_machine.StateTimeout(state_machine.At(deadline_ms), AbsTick),
       ])
 
-    state_machine.Timeout(state_machine.StateTimeoutType, AbsTick), AbsWaiting ->
-      state_machine.next_state(AbsFired, data, [])
+    state_machine.Timeout(state_machine.StateTimeoutType, AbsTick), AbsWaiting
+    -> state_machine.next_state(AbsFired, data, [])
 
     state_machine.Info(AbsGetState(reply_with: reply_sub)), _ -> {
       process.send(reply_sub, state)
@@ -701,7 +701,8 @@ fn custom_content_handler(
         ),
       ])
 
-    state_machine.Timeout(state_machine.StateTimeoutType, content), CntWaiting ->
+    state_machine.Timeout(state_machine.StateTimeoutType, content), CntWaiting
+    ->
       state_machine.next_state(
         CntDone,
         CntData(received: option.Some(content)),
