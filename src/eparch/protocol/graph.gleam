@@ -842,7 +842,10 @@ fn validate(protocol: Protocol) -> Result(Nil, Error) {
   assertions(protocol.spec, [], dict.new())
 }
 
-fn distinct_roles(roles: List(String), seen: List(String)) -> Result(Nil, Error) {
+fn distinct_roles(
+  roles: List(String),
+  seen: List(String),
+) -> Result(Nil, Error) {
   case roles {
     [] -> Ok(Nil)
     [role, ..rest] ->
