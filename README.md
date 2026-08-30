@@ -23,6 +23,12 @@ Eparch is a Gleam library that wraps certain Erlang/OTP behaviours with a type-s
 
 Full API reference: <https://hexdocs.pm/eparch>.
 
+> **Looking for session types?** The experimental session-types layer (the protocol
+> grammar, duality witnesses, the specification/projection/codegen toolchain and the
+> `gen_statem` protocol driver) now lives in
+> [`pacta`](https://github.com/byzantine-systems/pacta), which depends on this package.
+> Eparch is the OTP wrapper, and nothing more.
+
 ### Key Differences from `gen_statem`
 
 | Erlang's `gen_statem` | `eparch/state_machine` |
