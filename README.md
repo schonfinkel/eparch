@@ -23,11 +23,7 @@ Eparch is a Gleam library that wraps certain Erlang/OTP behaviours with a type-s
 
 Full API reference: <https://hexdocs.pm/eparch>.
 
-> **Looking for session types?** The experimental session-types layer (the protocol
-> grammar, duality witnesses, the specification/projection/codegen toolchain and the
-> `gen_statem` protocol driver) now lives in
-> [`pacta`](https://github.com/byzantine-systems/pacta), which depends on this package.
-> Eparch is the OTP wrapper, and nothing more.
+> **Looking for session types?** The experimental session-types layer (the protocol grammar, duality witnesses, the specification/projection/codegen toolchain and the `gen_statem` protocol driver) now lives in [`pacta`](https://github.com/byzantine-systems/pacta), which depends on this package. Eparch is the OTP wrapper, and nothing more.
 
 ### Key Differences from `gen_statem`
 
@@ -59,8 +55,7 @@ See the [Quick Start guide](https://hexdocs.pm/eparch/docs/quick_start.html) for
 
 ## Development
 
-The project uses [devenv](https://devenv.sh/) and [Nix](https://nixos.org/) for
-a hermetic development environment:
+The project uses [devenv](https://devenv.sh/) and [Nix](https://nixos.org/) for a hermetic development environment:
 
 ```sh
 nix develop
@@ -70,4 +65,15 @@ Or, if you are already using [direnv](https://direnv.net/):
 
 ```sh
 direnv allow .
+```
+
+The Erlang implementation is also a standalone rebar3 library under `src/eparch/ffi`. Gleam compiles the nested Erlang sources directly when it builds or publishes `eparch`, while these commands check the Erlang project on its own:
+
+```sh
+# Compile, run EUnit, and then Dialyzer
+make ffi-check
+
+# Regenerate src/eparch/ffi/deps.nix with rebar3_nix
+make ffi-deps-nix
+nix build .#eparch-ffi
 ```

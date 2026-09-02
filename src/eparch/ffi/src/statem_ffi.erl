@@ -1,4 +1,5 @@
 -module(statem_ffi).
+-include("eparch_otp_features.hrl").
 -moduledoc """
 Erlang FFI bridge for the statem Gleam module. Translates between Erlang's
 gen_statem behavior callbacks and Gleam's type-safe API.
@@ -140,9 +141,21 @@ invoke_start(no_link, none, InitArgs, Opts) ->
 invoke_start(no_link, {some, ServerName}, InitArgs, Opts) ->
     gen_statem:start(ServerName, ?MODULE, InitArgs, Opts);
 invoke_start(atomic_monitor, none, InitArgs, Opts) ->
-    gen_statem:start_monitor(?MODULE, InitArgs, Opts);
+    ?OTP_FEATURE(
+        "23.0",
+        gen_statem,
+        start_monitor,
+        3,
+        gen_statem:start_monitor(?MODULE, InitArgs, Opts)
+    );
 invoke_start(atomic_monitor, {some, ServerName}, InitArgs, Opts) ->
-    gen_statem:start_monitor(ServerName, ?MODULE, InitArgs, Opts).
+    ?OTP_FEATURE(
+        "23.0",
+        gen_statem,
+        start_monitor,
+        4,
+        gen_statem:start_monitor(ServerName, ?MODULE, InitArgs, Opts)
+    ).
 
 handle_start_result({ok, Pid}, AckTag) when is_pid(Pid) ->
     case await_init_ack(AckTag) of
@@ -691,36 +704,60 @@ send_replies(Replies) ->
 
 -doc "Block indefinitely until a reply arrives. Since OTP 23.".
 wait_response(ReqId) ->
-    case gen_statem:wait_response(ReqId) of
-        {reply, Reply} -> {ok, Reply};
-        {error, {Reason, _}} -> {error, {request_crashed, classify_reason(Reason)}}
-    end.
+    ?OTP_FEATURE(
+        "23.0",
+        gen_statem,
+        wait_response,
+        1,
+        case gen_statem:wait_response(ReqId) of
+            {reply, Reply} -> {ok, Reply};
+            {error, {Reason, _}} -> {error, {request_crashed, classify_reason(Reason)}}
+        end
+    ).
 
 -doc "Block until a reply arrives or the timeout (ms) expires. Since OTP 23.".
 wait_response_timeout(ReqId, Timeout) ->
-    case gen_statem:wait_response(ReqId, Timeout) of
-        {reply, Reply} -> {ok, Reply};
-        timeout -> {error, receive_timeout};
-        {error, {Reason, _}} -> {error, {request_crashed, classify_reason(Reason)}}
-    end.
+    ?OTP_FEATURE(
+        "23.0",
+        gen_statem,
+        wait_response,
+        2,
+        case gen_statem:wait_response(ReqId, Timeout) of
+            {reply, Reply} -> {ok, Reply};
+            timeout -> {error, receive_timeout};
+            {error, {Reason, _}} -> {error, {request_crashed, classify_reason(Reason)}}
+        end
+    ).
 
 -doc "Block indefinitely waiting for the reply to a single ReqId. Since OTP 24.".
 receive_response_blocking(ReqId) ->
-    case gen_statem:receive_response(ReqId) of
-        {reply, Reply} -> {ok, Reply};
-        {error, {Reason, _ServerRef}} -> {error, {request_crashed, classify_reason(Reason)}}
-    end.
+    ?OTP_FEATURE(
+        "24.0",
+        gen_statem,
+        receive_response,
+        1,
+        case gen_statem:receive_response(ReqId) of
+            {reply, Reply} -> {ok, Reply};
+            {error, {Reason, _ServerRef}} -> {error, {request_crashed, classify_reason(Reason)}}
+        end
+    ).
 
 -doc """
 Check if a received message is the reply for a request. Since OTP 23.
 Returns {ok, {some, Reply}}, {ok, none}, or {error, StopReason}.
 """.
 check_response(Msg, ReqId) ->
-    case gen_statem:check_response(Msg, ReqId) of
-        {reply, Reply} -> {ok, {some, Reply}};
-        no_reply -> {ok, none};
-        {error, {Reason, _}} -> {error, {request_crashed, classify_reason(Reason)}}
-    end.
+    ?OTP_FEATURE(
+        "23.0",
+        gen_statem,
+        check_response,
+        2,
+        case gen_statem:check_response(Msg, ReqId) of
+            {reply, Reply} -> {ok, {some, Reply}};
+            no_reply -> {ok, none};
+            {error, {Reason, _}} -> {error, {request_crashed, classify_reason(Reason)}}
+        end
+    ).
 
 %%%===================================================================
 %%% reqids API (OTP 25.0+)
@@ -728,19 +765,31 @@ check_response(Msg, ReqId) ->
 
 -doc "Creates a new empty request-id collection.".
 reqids_new() ->
-    gen_statem:reqids_new().
+    ?OTP_FEATURE("25.0", gen_statem, reqids_new, 0, gen_statem:reqids_new()).
 
 -doc "Adds a request id to a collection under the given label.".
 reqids_add(ReqId, Label, Collection) ->
-    gen_statem:reqids_add(ReqId, Label, Collection).
+    ?OTP_FEATURE(
+        "25.0",
+        gen_statem,
+        reqids_add,
+        3,
+        gen_statem:reqids_add(ReqId, Label, Collection)
+    ).
 
 -doc "Returns the number of request ids in the collection.".
 reqids_size(Collection) ->
-    gen_statem:reqids_size(Collection).
+    ?OTP_FEATURE("25.0", gen_statem, reqids_size, 1, gen_statem:reqids_size(Collection)).
 
 -doc "Converts the collection to a list of {ReqId, Label} pairs.".
 reqids_to_list(Collection) ->
-    gen_statem:reqids_to_list(Collection).
+    ?OTP_FEATURE(
+        "25.0",
+        gen_statem,
+        reqids_to_list,
+        1,
+        gen_statem:reqids_to_list(Collection)
+    ).
 
 -doc """
 Sends an asynchronous call request to a gen_statem process and returns a
@@ -749,14 +798,26 @@ with a `Reply(from, value)` action. Use `receive_response/2` to collect the
 reply when ready.
 """.
 send_request(ServerRef, Msg) ->
-    gen_statem:send_request(ref_target(ServerRef), Msg).
+    ?OTP_FEATURE(
+        "23.0",
+        gen_statem,
+        send_request,
+        2,
+        gen_statem:send_request(ref_target(ServerRef), Msg)
+    ).
 
 -doc """
 Like `send_request/2` but also adds the resulting request id (under `Label`)
 to `Collection`, returning the updated collection.
 """.
 send_request_to_collection(ServerRef, Msg, Label, Collection) ->
-    gen_statem:send_request(ref_target(ServerRef), Msg, Label, Collection).
+    ?OTP_FEATURE(
+        "25.0",
+        gen_statem,
+        send_request,
+        4,
+        gen_statem:send_request(ref_target(ServerRef), Msg, Label, Collection)
+    ).
 
 -doc """
 Waits up to `Timeout` milliseconds for the reply to a single `ReqId`.
@@ -764,14 +825,20 @@ Returns `{ok, Reply}` on success, `{error, receive_timeout}` on timeout,
 or `{error, {request_crashed, StopReason}}` if the server terminated.
 """.
 receive_response(ReqId, Timeout) ->
-    case gen_statem:receive_response(ReqId, Timeout) of
-        {reply, Reply} ->
-            {ok, Reply};
-        timeout ->
-            {error, receive_timeout};
-        {error, {Reason, _ServerRef}} ->
-            {error, {request_crashed, classify_reason(Reason)}}
-    end.
+    ?OTP_FEATURE(
+        "23.0",
+        gen_statem,
+        receive_response,
+        2,
+        case gen_statem:receive_response(ReqId, Timeout) of
+            {reply, Reply} ->
+                {ok, Reply};
+            timeout ->
+                {error, receive_timeout};
+            {error, {Reason, _ServerRef}} ->
+                {error, {request_crashed, classify_reason(Reason)}}
+        end
+    ).
 
 -doc """
 Waits up to `Timeout` milliseconds for any reply in `Collection`.
@@ -788,14 +855,20 @@ receive_response_collection(Collection, Timeout, Handling) ->
             delete -> true;
             keep -> false
         end,
-    case gen_statem:receive_response(Collection, Timeout, Delete) of
-        {{reply, Reply}, Label, NewColl} ->
-            {got_reply, Reply, Label, NewColl};
-        {{error, {Reason, _ServerRef}}, Label, NewColl} ->
-            {request_failed, classify_reason(Reason), Label, NewColl};
-        no_request ->
-            no_requests
-    end.
+    ?OTP_FEATURE(
+        "25.0",
+        gen_statem,
+        receive_response,
+        3,
+        case gen_statem:receive_response(Collection, Timeout, Delete) of
+            {{reply, Reply}, Label, NewColl} ->
+                {got_reply, Reply, Label, NewColl};
+            {{error, {Reason, _ServerRef}}, Label, NewColl} ->
+                {request_failed, classify_reason(Reason), Label, NewColl};
+            no_request ->
+                no_requests
+        end
+    ).
 
 -doc """
 Converts a Gleam ExitReason to an Erlang exit reason term.

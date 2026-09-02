@@ -1,4 +1,5 @@
 -module(event_manager_ffi).
+-include("eparch_otp_features.hrl").
 -moduledoc """
 Erlang FFI bridge for the event_manager Gleam module.
 
@@ -136,9 +137,21 @@ do_start_monitor({start_options, NameOpt, Timeout, HibernateAfter, DebugFlags, S
     Result =
         case NameOpt of
             none ->
-                gen_event:start_monitor(ErlangOpts);
+                ?OTP_FEATURE(
+                    "23.0",
+                    gen_event,
+                    start_monitor,
+                    1,
+                    gen_event:start_monitor(ErlangOpts)
+                );
             {some, ServerName} ->
-                gen_event:start_monitor(ServerName, ErlangOpts)
+                ?OTP_FEATURE(
+                    "23.0",
+                    gen_event,
+                    start_monitor,
+                    2,
+                    gen_event:start_monitor(ServerName, ErlangOpts)
+                )
         end,
     convert_monitor_result(Result).
 
@@ -460,7 +473,13 @@ Wraps `gen_event:send_request/3`. Use `receive_response/2`, `wait_response/2`,
 or `check_response/2` to collect the reply.
 """.
 send_request(Manager, HandlerId, Request) ->
-    gen_event:send_request(Manager, HandlerId, Request).
+    ?OTP_FEATURE(
+        "23.0",
+        gen_event,
+        send_request,
+        3,
+        gen_event:send_request(Manager, HandlerId, Request)
+    ).
 
 -doc """
 Block up to `Timeout` milliseconds for the reply to `ReqId`.
@@ -470,32 +489,44 @@ Returns `{ok, Reply}` on success, `{error, receive_timeout}` on timeout, or
 replying. Drains the matching message from the mailbox.
 """.
 receive_response(ReqId, Timeout) ->
-    case gen_event:receive_response(ReqId, Timeout) of
-        {reply, {gleam_call_ok, Reply}} ->
-            {ok, Reply};
-        {reply, {gleam_call_error, Reason}} ->
-            {error, {request_crashed, classify_reason(Reason)}};
-        timeout ->
-            {error, receive_timeout};
-        {error, {Reason, _Ref}} ->
-            {error, {request_crashed, classify_reason(Reason)}}
-    end.
+    ?OTP_FEATURE(
+        "23.0",
+        gen_event,
+        receive_response,
+        2,
+        case gen_event:receive_response(ReqId, Timeout) of
+            {reply, {gleam_call_ok, Reply}} ->
+                {ok, Reply};
+            {reply, {gleam_call_error, Reason}} ->
+                {error, {request_crashed, classify_reason(Reason)}};
+            timeout ->
+                {error, receive_timeout};
+            {error, {Reason, _Ref}} ->
+                {error, {request_crashed, classify_reason(Reason)}}
+        end
+    ).
 
 -doc """
 Same as `receive_response/2` but leaves non-matching messages in the mailbox
 on success (it does not selectively drain). Maps to `gen_event:wait_response/2`.
 """.
 wait_response(ReqId, Timeout) ->
-    case gen_event:wait_response(ReqId, Timeout) of
-        {reply, {gleam_call_ok, Reply}} ->
-            {ok, Reply};
-        {reply, {gleam_call_error, Reason}} ->
-            {error, {request_crashed, classify_reason(Reason)}};
-        timeout ->
-            {error, receive_timeout};
-        {error, {Reason, _Ref}} ->
-            {error, {request_crashed, classify_reason(Reason)}}
-    end.
+    ?OTP_FEATURE(
+        "23.0",
+        gen_event,
+        wait_response,
+        2,
+        case gen_event:wait_response(ReqId, Timeout) of
+            {reply, {gleam_call_ok, Reply}} ->
+                {ok, Reply};
+            {reply, {gleam_call_error, Reason}} ->
+                {error, {request_crashed, classify_reason(Reason)}};
+            timeout ->
+                {error, receive_timeout};
+            {error, {Reason, _Ref}} ->
+                {error, {request_crashed, classify_reason(Reason)}}
+        end
+    ).
 
 -doc """
 Non-blocking check: test whether `Msg` is a reply for `ReqId`.
@@ -504,16 +535,22 @@ Returns `{check_got_reply, Reply}`, `{check_crashed, StopReason}`, or
 `check_no_reply` if the message belongs to a different request.
 """.
 check_response(Msg, ReqId) ->
-    case gen_event:check_response(Msg, ReqId) of
-        {reply, {gleam_call_ok, Reply}} ->
-            {check_got_reply, Reply};
-        {reply, {gleam_call_error, Reason}} ->
-            {check_crashed, classify_reason(Reason)};
-        no_reply ->
-            check_no_reply;
-        {error, {Reason, _Ref}} ->
-            {check_crashed, classify_reason(Reason)}
-    end.
+    ?OTP_FEATURE(
+        "23.0",
+        gen_event,
+        check_response,
+        2,
+        case gen_event:check_response(Msg, ReqId) of
+            {reply, {gleam_call_ok, Reply}} ->
+                {check_got_reply, Reply};
+            {reply, {gleam_call_error, Reason}} ->
+                {check_crashed, classify_reason(Reason)};
+            no_reply ->
+                check_no_reply;
+            {error, {Reason, _Ref}} ->
+                {check_crashed, classify_reason(Reason)}
+        end
+    ).
 
 %%%===================================================================
 %%% reqids collection API: OTP 25.0+
@@ -521,26 +558,44 @@ check_response(Msg, ReqId) ->
 
 -doc "Creates a new empty request-id collection.".
 reqids_new() ->
-    gen_event:reqids_new().
+    ?OTP_FEATURE("25.0", gen_event, reqids_new, 0, gen_event:reqids_new()).
 
 -doc "Adds a request id to a collection under the given label.".
 reqids_add(ReqId, Label, Collection) ->
-    gen_event:reqids_add(ReqId, Label, Collection).
+    ?OTP_FEATURE(
+        "25.0",
+        gen_event,
+        reqids_add,
+        3,
+        gen_event:reqids_add(ReqId, Label, Collection)
+    ).
 
 -doc "Returns the number of request ids in the collection.".
 reqids_size(Collection) ->
-    gen_event:reqids_size(Collection).
+    ?OTP_FEATURE("25.0", gen_event, reqids_size, 1, gen_event:reqids_size(Collection)).
 
 -doc "Converts the collection to a list of {ReqId, Label} pairs.".
 reqids_to_list(Collection) ->
-    gen_event:reqids_to_list(Collection).
+    ?OTP_FEATURE(
+        "25.0",
+        gen_event,
+        reqids_to_list,
+        1,
+        gen_event:reqids_to_list(Collection)
+    ).
 
 -doc """
 Like `send_request/3` but also adds the resulting request id (under `Label`)
 to `Collection`, returning the updated collection.
 """.
 send_request_to_collection(Manager, HandlerId, Request, Label, Collection) ->
-    gen_event:send_request(Manager, HandlerId, Request, Label, Collection).
+    ?OTP_FEATURE(
+        "25.0",
+        gen_event,
+        send_request,
+        5,
+        gen_event:send_request(Manager, HandlerId, Request, Label, Collection)
+    ).
 
 -doc """
 Drain (or peek, when `Handling = keep`) the next reply from a collection.
@@ -553,18 +608,24 @@ Maps `gen_event:receive_response/3` to a Gleam `CollectionResponse`:
 """.
 receive_response_collection(Collection, Timeout, Handling) ->
     Delete = (Handling =:= delete),
-    case gen_event:receive_response(Collection, Timeout, Delete) of
-        {{reply, {gleam_call_ok, Reply}}, Label, NewColl} ->
-            {got_reply, Reply, Label, NewColl};
-        {{reply, {gleam_call_error, Reason}}, Label, NewColl} ->
-            {request_failed, classify_reason(Reason), Label, NewColl};
-        {{error, {Reason, _Ref}}, Label, NewColl} ->
-            {request_failed, classify_reason(Reason), Label, NewColl};
-        no_request ->
-            no_requests;
-        timeout ->
-            {collection_timeout, Collection}
-    end.
+    ?OTP_FEATURE(
+        "25.0",
+        gen_event,
+        receive_response,
+        3,
+        case gen_event:receive_response(Collection, Timeout, Delete) of
+            {{reply, {gleam_call_ok, Reply}}, Label, NewColl} ->
+                {got_reply, Reply, Label, NewColl};
+            {{reply, {gleam_call_error, Reason}}, Label, NewColl} ->
+                {request_failed, classify_reason(Reason), Label, NewColl};
+            {{error, {Reason, _Ref}}, Label, NewColl} ->
+                {request_failed, classify_reason(Reason), Label, NewColl};
+            no_request ->
+                no_requests;
+            timeout ->
+                {collection_timeout, Collection}
+        end
+    ).
 
 -doc """
 Like `receive_response_collection/3` but uses `gen_event:wait_response/3`,
@@ -572,18 +633,24 @@ which does not drain non-matching mailbox messages on success.
 """.
 wait_response_collection(Collection, Timeout, Handling) ->
     Delete = (Handling =:= delete),
-    case gen_event:wait_response(Collection, Timeout, Delete) of
-        {{reply, {gleam_call_ok, Reply}}, Label, NewColl} ->
-            {got_reply, Reply, Label, NewColl};
-        {{reply, {gleam_call_error, Reason}}, Label, NewColl} ->
-            {request_failed, classify_reason(Reason), Label, NewColl};
-        {{error, {Reason, _Ref}}, Label, NewColl} ->
-            {request_failed, classify_reason(Reason), Label, NewColl};
-        no_request ->
-            no_requests;
-        timeout ->
-            {collection_timeout, Collection}
-    end.
+    ?OTP_FEATURE(
+        "25.0",
+        gen_event,
+        wait_response,
+        3,
+        case gen_event:wait_response(Collection, Timeout, Delete) of
+            {{reply, {gleam_call_ok, Reply}}, Label, NewColl} ->
+                {got_reply, Reply, Label, NewColl};
+            {{reply, {gleam_call_error, Reason}}, Label, NewColl} ->
+                {request_failed, classify_reason(Reason), Label, NewColl};
+            {{error, {Reason, _Ref}}, Label, NewColl} ->
+                {request_failed, classify_reason(Reason), Label, NewColl};
+            no_request ->
+                no_requests;
+            timeout ->
+                {collection_timeout, Collection}
+        end
+    ).
 
 -doc """
 Non-blocking check: test whether `Msg` is a reply for any request in
@@ -596,18 +663,24 @@ Non-blocking check: test whether `Msg` is a reply for any request in
 """.
 check_response_collection(Msg, Collection, Handling) ->
     Delete = (Handling =:= delete),
-    case gen_event:check_response(Msg, Collection, Delete) of
-        {{reply, {gleam_call_ok, Reply}}, Label, NewColl} ->
-            {got_reply, Reply, Label, NewColl};
-        {{reply, {gleam_call_error, Reason}}, Label, NewColl} ->
-            {request_failed, classify_reason(Reason), Label, NewColl};
-        {{error, {Reason, _Ref}}, Label, NewColl} ->
-            {request_failed, classify_reason(Reason), Label, NewColl};
-        no_reply ->
-            {no_reply, Collection};
-        no_request ->
-            no_requests
-    end.
+    ?OTP_FEATURE(
+        "25.0",
+        gen_event,
+        check_response,
+        3,
+        case gen_event:check_response(Msg, Collection, Delete) of
+            {{reply, {gleam_call_ok, Reply}}, Label, NewColl} ->
+                {got_reply, Reply, Label, NewColl};
+            {{reply, {gleam_call_error, Reason}}, Label, NewColl} ->
+                {request_failed, classify_reason(Reason), Label, NewColl};
+            {{error, {Reason, _Ref}}, Label, NewColl} ->
+                {request_failed, classify_reason(Reason), Label, NewColl};
+            no_reply ->
+                {no_reply, Collection};
+            no_request ->
+                no_requests
+        end
+    ).
 
 %%%===================================================================
 %%% Internal helpers

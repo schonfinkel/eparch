@@ -1,0 +1,7 @@
+name = "eparch_ffi"
+version = "1.0.0"
+target = "erlang"
+
+description = "Erlang FFI implementation for eparch"
+licences = ["LGPL-3.0-or-later"]
+repository = { type = "github", user = "byzantine-systems", repo = "eparch", path = "src/eparch/ffi" }
