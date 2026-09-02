@@ -1,0 +1,6 @@
+case os:getenv("EPARCH_REBAR_BUILD_DIR") of
+    false ->
+        CONFIG;
+    BuildDir ->
+        lists:keystore(base_dir, 1, CONFIG, {base_dir, BuildDir})
+end.

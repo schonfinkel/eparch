@@ -11,8 +11,8 @@ gleam test
 
 | Example | Description |
 |---|---|
-| [`push-button`](https://github.com/schonfinkel/eparch/tree/main/examples/push-button) | Basic state transitions, synchronous calls, press counter |
-| [`simple-door-lock`](https://github.com/schonfinkel/eparch/tree/main/examples/simple-door-lock) | Shows how to use `with_state_enter`, `StateTimeout` for auto-lock, wrong-code tracking |
+| [`push-button`](https://github.com/byzantine-systems/eparch/tree/main/examples/push-button) | Basic state transitions, synchronous calls, press counter |
+| [`simple-door-lock`](https://github.com/byzantine-systems/eparch/tree/main/examples/simple-door-lock) | Shows how to use `with_state_enter`, `StateTimeout` for auto-lock, wrong-code tracking |
 
 ### Push-Button
 
@@ -33,7 +33,7 @@ A code-protected door lock. Also an example from the [docs](https://www.erlang.o
 
 | Example | Description |
 |---|---|
-| [`terminal-logger`](https://github.com/schonfinkel/eparch/tree/main/examples/terminal-logger) | Fan-out broadcasting via `notify`, multiple handlers with independent state, `on_terminate` cleanup |
+| [`terminal-logger`](https://github.com/byzantine-systems/eparch/tree/main/examples/terminal-logger) | Fan-out broadcasting via `notify`, multiple handlers with independent state, `on_terminate` cleanup |
 
 ### Terminal Logger
 
@@ -43,18 +43,7 @@ A pair of `gen_event` handlers wired to a single event bus. Modelled after the c
 - `add_file_logger`: appends each event to a file path
 - `report` broadcasts to every registered handler in one call
 
-## Session Types (`eparch/session`, `eparch/protocol`)
 
-| Example | Description |
-|---|---|
-| [`atm`](https://github.com/schonfinkel/eparch/tree/main/examples/atm) | A protocol specification, projected onto both participants, generated into typed positions, and driven from a `gen_statem` |
+## Session Types
 
-### ATM
-
-The ATM protocol from Laumann, Munksgaard and Larsen, [*Session Types for Rust*](https://munksgaard.me/papers/laumann-munksgaard-larsen.pdf).
-
-- One global specification, projected onto a `Client` and an `Atm`.
-- Recursion, so it is a protocol that **cannot** be written as a nested Gleam type at all: the generator flattens it into named positions with an edge back to the head of the loop.
-- The machine side as a `protocol_machine`, the client side walked by hand, both checked against the same specification.
-- Duality and subtyping decided over the projected graphs, including the answer to the "can I add a branch without breaking everyone" question the paper raises and leaves to the reader.
-- Generated modules committed, with `gleam run -m generate check` to fail CI when they go stale.
+The session-types examples moved to [`pacta`](https://github.com/byzantine-systems/pacta), the experimental package that now owns that layer.

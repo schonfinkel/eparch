@@ -1,5 +1,5 @@
 {
-  description = "Pharo's nix build and development shell";
+  description = "Eparch's nix build and development shell";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
@@ -52,11 +52,51 @@
           system,
           ...
         }:
+        let
+          ffiDeps = import ./src/eparch/ffi/rebar-deps.nix {
+            inherit (pkgs) fetchFromGitHub fetchgit;
+            inherit (pkgs.beamPackages) fetchHex;
+          };
+          installFfiDeps = pkgs.lib.concatStringsSep "\n" (
+            pkgs.lib.mapAttrsToList (name: source: ''
+              cp -R --no-preserve=mode ${source} "_checkouts/${name}"
+            '') ffiDeps
+          );
+          ffiPackage = pkgs.beamPackages.buildRebar3 {
+            name = "eparch_ffi";
+            version = "1.0.0";
+            src = ./src/eparch/ffi;
+            EPARCH_REBAR_BUILD_DIR = "_build";
+            preBuild = ''
+              mkdir -p _checkouts
+              ${installFfiDeps}
+            '';
+          };
+        in
         {
           packages = {
             default = inputs'.nix-gleam.packages.buildGleamApplication {
               src = ./.;
             };
+            eparch-ffi = ffiPackage;
+          };
+
+          checks = {
+            eparch-ffi = ffiPackage;
+            eparch-ffi-quality =
+              pkgs.runCommand "eparch-ffi-quality"
+                {
+                  nativeBuildInputs = [ pkgs.beamPackages.rebar3 ];
+                }
+                ''
+                  cp -R --no-preserve=mode ${./src/eparch/ffi} ffi
+                  cd ffi
+                  export EPARCH_REBAR_BUILD_DIR=_build
+                  mkdir -p _checkouts
+                  ${installFfiDeps}
+                  rebar3 do eunit, dialyzer
+                  touch "$out"
+                '';
           };
 
           # nix fmt + nix flake check (auto-wired by flakeModule)
@@ -84,6 +124,7 @@
                 # Erlang tooling
                 erlfmt
                 erlang-language-platform
+                rebar3
 
                 # Extra tooling
                 gnumake
